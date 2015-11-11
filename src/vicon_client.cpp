@@ -16,7 +16,6 @@
 
 // defaults
 #define DEFAULT_MOCAP_HOST_ADDR "10.243.39.168"
-//#define DEFAULT_MOCAP_HOST_ADDR "192.168.1.104"
 #define DEFAULT_MOCAP_HOST_PORT "801"
 
 #define dbg(...) fprintf(stderr, __VA_ARGS__)
@@ -240,10 +239,10 @@ int main(int argc, char **argv)
 
   lcm_t * lcm = lcm_create(NULL);
 
-  //TODO: get host and port from command line
   std::string mocap_host_addr = DEFAULT_MOCAP_HOST_ADDR;
   std::string mocap_host_port = DEFAULT_MOCAP_HOST_PORT;
 
+  //Optionally supply Vicon host IP address at command line
   if(argc > 1) {
     mocap_host_addr = argv[1];
   }
