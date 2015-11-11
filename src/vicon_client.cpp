@@ -12,20 +12,20 @@
 #include <lcmtypes/vicon_body_t.h>
 
 
-#include "data_stream_client.hpp"
+#include "data_stream_client.h"
 
 // defaults
-#define DEFAULT_MOCAP_HOST_ADDR "192.168.20.99"
+#define DEFAULT_MOCAP_HOST_ADDR "10.243.39.168"
 //#define DEFAULT_MOCAP_HOST_ADDR "192.168.1.104"
 #define DEFAULT_MOCAP_HOST_PORT "801"
 
 #define dbg(...) fprintf(stderr, __VA_ARGS__)
 
-static int64_t _timestamp_now()
-{
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
+ static int64_t _timestamp_now()
+ {
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 
@@ -33,58 +33,58 @@ static int64_t _timestamp_now()
 using namespace ViconDataStreamSDK::CPP;
 
 namespace {
-std::string Adapt(const bool i_Value)
-{
-  return i_Value ? "True" : "False";
-}
-
-std::string Adapt(const Direction::Enum i_Direction)
-{
-  switch (i_Direction) {
-  case Direction::Forward:
-    return "Forward";
-  case Direction::Backward:
-    return "Backward";
-  case Direction::Left:
-    return "Left";
-  case Direction::Right:
-    return "Right";
-  case Direction::Up:
-    return "Up";
-  case Direction::Down:
-    return "Down";
-  default:
-    return "Unknown";
+  std::string Adapt(const bool i_Value)
+  {
+    return i_Value ? "True" : "False";
   }
-}
 
-std::string Adapt(const DeviceType::Enum i_DeviceType)
-{
-  switch (i_DeviceType) {
-  case DeviceType::ForcePlate:
-    return "ForcePlate";
-  case DeviceType::Unknown:
-  default:
-    return "Unknown";
+  std::string Adapt(const Direction::Enum i_Direction)
+  {
+    switch (i_Direction) {
+      case Direction::Forward:
+      return "Forward";
+      case Direction::Backward:
+      return "Backward";
+      case Direction::Left:
+      return "Left";
+      case Direction::Right:
+      return "Right";
+      case Direction::Up:
+      return "Up";
+      case Direction::Down:
+      return "Down";
+      default:
+      return "Unknown";
+    }
   }
-}
 
-std::string Adapt(const Unit::Enum i_Unit)
-{
-  switch (i_Unit) {
-  case Unit::Meter:
-    return "Meter";
-  case Unit::Volt:
-    return "Volt";
-  case Unit::NewtonMeter:
-    return "NewtonMeter";
-  case Unit::Newton:
-    return "Newton";
-  case Unit::Unknown:
-  default:
-    return "Unknown";
+  std::string Adapt(const DeviceType::Enum i_DeviceType)
+  {
+    switch (i_DeviceType) {
+      case DeviceType::ForcePlate:
+      return "ForcePlate";
+      case DeviceType::Unknown:
+      default:
+      return "Unknown";
+    }
   }
-}
+
+  std::string Adapt(const Unit::Enum i_Unit)
+  {
+    switch (i_Unit) {
+      case Unit::Meter:
+      return "Meter";
+      case Unit::Volt:
+      return "Volt";
+      case Unit::NewtonMeter:
+      return "NewtonMeter";
+      case Unit::Newton:
+      return "Newton";
+      case Unit::Unknown:
+      default:
+      return "Unknown";
+    }
+  }
 }
 
 // class
@@ -114,14 +114,14 @@ private:
 };
 
 // class constructor
-DataStreamClient::DataStreamClient(lcm_t * lcm, std::string vicon_hostname) :
-  _lcm(lcm)
+DataStreamClient::DataStreamClient(lcm_t * lcm, std::string vicon_hostname) : _lcm(lcm)
 {
   // local stack
   Output_GetAxisMapping axis_mapping;
   Output_GetVersion version_number;
 
   _vicon_client.Connect(vicon_hostname);
+  
   if (!_vicon_client.IsConnected().Connected) {
     fprintf(stderr, "Error connecting to %s\n", vicon_hostname.c_str());
     exit(1);
@@ -157,8 +157,7 @@ DataStreamClient::~DataStreamClient(void)
 void DataStreamClient::run(void)
 {
 
-  while (true) //TODO: exit cleanly?
-  {
+  while (true) { //TODO: exit cleanly?
 
     // get frame
     while (_vicon_client.GetFrame().Result != Result::Success) {
@@ -175,10 +174,10 @@ void DataStreamClient::run(void)
     msg.utime = _timestamp_now();
 
     // get subject count
-    uint subject_count = _vicon_client.GetSubjectCount().SubjectCount;
+    unsigned int subject_count = _vicon_client.GetSubjectCount().SubjectCount;
 
     // loop through subjects
-    for (uint subject_index = 0; subject_index < subject_count; subject_index++) {
+    for (unsigned int subject_index = 0; subject_index < subject_count; subject_index++) {
       // get subject name
       std::string subject_name = _vicon_client.GetSubjectName(subject_index).SubjectName;
 
@@ -186,10 +185,10 @@ void DataStreamClient::run(void)
       std::string root_segment_name = _vicon_client.GetSubjectRootSegmentName(subject_name).SegmentName;
 
       // get number of segments
-      uint segment_count = _vicon_client.GetSegmentCount(subject_name).SegmentCount;
+      unsigned int segment_count = _vicon_client.GetSegmentCount(subject_name).SegmentCount;
 
       // loop through segments
-      for (uint segment_index = 0; segment_index < segment_count; segment_index++) {
+      for (unsigned int segment_index = 0; segment_index < segment_count; segment_index++) {
         // get segment name
         std::string segment_name = _vicon_client.GetSegmentName(subject_name, segment_index).SegmentName;
 
@@ -198,28 +197,31 @@ void DataStreamClient::run(void)
           // get segment translation
           // Output_GetSegmentStaticTranslation segment_translation = _vicon_client.GetSegmentStaticTranslation(subject_name, segment_name);
           Output_GetSegmentGlobalTranslation segment_translation = _vicon_client.GetSegmentGlobalTranslation(
-              subject_name, segment_name);
+            subject_name, segment_name);
 
           // get segment rotation
           //Output_GetSegmentStaticRotationQuaternion segment_rotation = _vicon_client.GetSegmentStaticRotationQuaternion(subject_name, segment_name);
           Output_GetSegmentGlobalRotationQuaternion segment_rotation =
-              _vicon_client.GetSegmentGlobalRotationQuaternion(subject_name, segment_name);
+          _vicon_client.GetSegmentGlobalRotationQuaternion(subject_name, segment_name);
           //           Output_GetSegmentGlobalRotationEulerXYZ   segment_rotation = _vicon_client.GetSegmentGlobalRotationEulerXYZ(subject_name, segment_name);
 
           // populate message with position
-          for (int i = 0; i < 3; i++)
+          for (int i = 0; i < 3; i++) {
             msg.trans[i] = segment_translation.Translation[i]/1000.0; //vicon data is in mm
-	  msg.quat[0] = segment_rotation.Rotation[3]; //vicon is x,y,z,w
-	  msg.quat[1] = segment_rotation.Rotation[0];
-	  msg.quat[2] = segment_rotation.Rotation[1];
-	  msg.quat[3] = segment_rotation.Rotation[2];
+          }
+
+          //vicon is x,y,z,w
+      	  msg.quat[0] = segment_rotation.Rotation[3];
+      	  msg.quat[1] = segment_rotation.Rotation[0];
+      	  msg.quat[2] = segment_rotation.Rotation[1];
+      	  msg.quat[3] = segment_rotation.Rotation[2];
 
 
-          std::string channel = "VICON_" + subject_name;
-          vicon_body_t_publish(_lcm, channel.c_str(), &msg);
+    std::string channel = "VICON_" + subject_name;
+    vicon_body_t_publish(_lcm, channel.c_str(), &msg);
 
           // break from segment for loop
-          break;
+    break;
         }
       }
     }
@@ -243,7 +245,7 @@ int main(int argc, char **argv)
   std::string mocap_host_port = DEFAULT_MOCAP_HOST_PORT;
 
   if(argc > 1) {
-      mocap_host_addr = argv[1];
+    mocap_host_addr = argv[1];
   }
 
   std::string vicon_host = mocap_host_addr + ":" + mocap_host_port;
