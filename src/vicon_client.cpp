@@ -183,46 +183,34 @@ void DataStreamClient::run(void)
       // get root segment name
       std::string root_segment_name = _vicon_client.GetSubjectRootSegmentName(subject_name).SegmentName;
 
-      // get number of segments
-      unsigned int segment_count = _vicon_client.GetSegmentCount(subject_name).SegmentCount;
+      // get segment translation
+      Output_GetSegmentGlobalTranslation segment_translation = _vicon_client.GetSegmentGlobalTranslation(
+        subject_name, root_segment_name);
 
-      // loop through segments
-      for (unsigned int segment_index = 0; segment_index < segment_count; segment_index++) {
-        // get segment name
-        std::string segment_name = _vicon_client.GetSegmentName(subject_name, segment_index).SegmentName;
+      // check if the segment is visible, don't publish a message with no data
+      if (segment_translation.Occluded)
+        continue;
 
-        // check if root segment
-        if (segment_name == root_segment_name) { //TODO: handle articulated bodies
-          // get segment translation
-          // Output_GetSegmentStaticTranslation segment_translation = _vicon_client.GetSegmentStaticTranslation(subject_name, segment_name);
-          Output_GetSegmentGlobalTranslation segment_translation = _vicon_client.GetSegmentGlobalTranslation(
-            subject_name, segment_name);
+      // get segement rotation (quaternion)
+      Output_GetSegmentGlobalRotationQuaternion segment_rotation =
+      _vicon_client.GetSegmentGlobalRotationQuaternion(subject_name, root_segment_name);
+      //           Output_GetSegmentGlobalRotationEulerXYZ   segment_rotation = _vicon_client.GetSegmentGlobalRotationEulerXYZ(subject_name, segment_name);
 
-          // get segment rotation
-          //Output_GetSegmentStaticRotationQuaternion segment_rotation = _vicon_client.GetSegmentStaticRotationQuaternion(subject_name, segment_name);
-          Output_GetSegmentGlobalRotationQuaternion segment_rotation =
-          _vicon_client.GetSegmentGlobalRotationQuaternion(subject_name, segment_name);
-          //           Output_GetSegmentGlobalRotationEulerXYZ   segment_rotation = _vicon_client.GetSegmentGlobalRotationEulerXYZ(subject_name, segment_name);
-
-          // populate message with position
-          for (int i = 0; i < 3; i++) {
-            msg.trans[i] = segment_translation.Translation[i]/1000.0; //vicon data is in mm
-          }
-
-          //vicon is x,y,z,w
-      	  msg.quat[0] = segment_rotation.Rotation[3];
-      	  msg.quat[1] = segment_rotation.Rotation[0];
-      	  msg.quat[2] = segment_rotation.Rotation[1];
-      	  msg.quat[3] = segment_rotation.Rotation[2];
-
-
-    std::string channel = "VICON_" + subject_name;
-    vicon_body_t_publish(_lcm, channel.c_str(), &msg);
-
-          // break from segment for loop
-    break;
-        }
+      // populate message with position
+      for (int i = 0; i < 3; i++) {
+        msg.trans[i] = segment_translation.Translation[i]/1000.0; //vicon data is in mm
       }
+
+      //vicon is x,y,z,w
+  	  msg.quat[0] = segment_rotation.Rotation[3];
+  	  msg.quat[1] = segment_rotation.Rotation[0];
+  	  msg.quat[2] = segment_rotation.Rotation[1];
+  	  msg.quat[3] = segment_rotation.Rotation[2];
+
+      // publish
+      std::string channel = "VICON_" + subject_name;
+      vicon_body_t_publish(_lcm, channel.c_str(), &msg);
+
     }
 
   }
